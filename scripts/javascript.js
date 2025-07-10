@@ -84,11 +84,11 @@ const GameController = (function () {
         // update the game board based on chosen cell (index) if it is valid
         if (GameBoard.setCell(index, currentPlayer.marker)) {
             let currentBoard = GameBoard.getBoard();
+            // update the UI
+            DisplayController.renderBoard(currentBoard);
             // check for win before changing the player
             if (checkWin(currentBoard, currentPlayer.marker) === true) {
                 console.log('game has been won');
-                // reset the game when it has been won
-                resetGame();
                 return;
             }
             // check for tie
@@ -115,3 +115,42 @@ function createPlayer (name, marker) {
         marker,
     };
 }
+
+const DisplayController = (function () {
+    const boardContainer = document.getElementById('game-board');
+  
+    const renderBoard = function (board) {
+      boardContainer.innerHTML = '';
+      board.forEach((cell, index) => {
+        const cellElement = document.createElement('div');
+        cellElement.classList.add('cell');
+        cellElement.dataset.index = index;
+        cellElement.textContent = cell;
+        boardContainer.appendChild(cellElement);
+      });
+      addCellListeners();
+    };
+  
+    const setStatusMessage = function (message) {
+      document.getElementById('status').textContent = message;
+    };
+
+    // event listeners on cells
+    const addCellListeners = function () {
+        const cells = document.querySelectorAll('.cell');
+        cells.forEach(function (cell) {
+            cell.addEventListener('click', function (event) {
+                const index = event.target.dataset.index;
+                GameController.processTurn(index);
+            });
+        });
+    };
+  
+    return {
+      renderBoard,
+      setStatusMessage,
+    };
+  })();
+
+// initialize display on page load
+DisplayController.renderBoard(GameBoard.getBoard());
