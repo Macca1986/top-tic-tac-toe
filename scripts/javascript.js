@@ -1,5 +1,3 @@
-console.log('hello world');
-
 const GameBoard = (function () {
     let board = ["","","","","","","","",""];
 
@@ -8,7 +6,7 @@ const GameBoard = (function () {
     }
 
     const setCell = function (index, marker) {
-        if (board[index] == "") {
+        if (board[index] === "") {
             board[index] = marker;
             return true;
         } else {
@@ -60,6 +58,7 @@ const GameController = (function () {
         });
     };
 
+    // check for tied games
     const checkTie = function (board) {
         // if anyone has won, return false
         if (checkWin(board, 'X') || checkWin(board, 'O')) {
@@ -67,12 +66,18 @@ const GameController = (function () {
         };
         // if any cells are empty return false
         for (let i = 0; i < board.length; i++) {
-            if (board[i] == '') {
+            if (board[i] === '') {
                 return false;
             }
         }
         return true;
     };
+
+    // reset the game
+    const resetGame = function () {
+        GameBoard.reset();
+        currentPlayer = player1;
+    }
 
     // logic to input player move
     const processTurn = function (index) {
@@ -80,12 +85,16 @@ const GameController = (function () {
         if (GameBoard.setCell(index, currentPlayer.marker)) {
             let currentBoard = GameBoard.getBoard();
             // check for win before changing the player
-            if (checkWin(currentBoard, currentPlayer.marker) == true) {
+            if (checkWin(currentBoard, currentPlayer.marker) === true) {
                 console.log('game has been won');
+                // reset the game when it has been won
+                resetGame();
+                return;
             }
             // check for tie
-            if (checkTie(currentBoard) == true) {
+            if (checkTie(currentBoard) === true) {
                 console.log('game has been tied');
+                return;
             } else {
                 console.log('no tie');
             }
@@ -95,7 +104,6 @@ const GameController = (function () {
         } else {
             console.log('invalid selection');
         };
-
     }
 
     return { getCurrentPlayer, processTurn };
