@@ -134,6 +134,11 @@ const DisplayController = (function () {
         cellElement.classList.add('cell');
         cellElement.dataset.index = index;
         cellElement.textContent = cell;
+        if (cell === 'X') {
+            cellElement.style.color = '#FF6B6B';
+        } else if (cell === 'O') {
+            cellElement.style.color = '#4ECDC4';
+        }
         boardContainer.appendChild(cellElement);
       });
       addCellListeners();
