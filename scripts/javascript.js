@@ -21,6 +21,9 @@ const GameBoard = (function () {
     return { getBoard, setCell, reset };
 })();
 
+// variable to store whether the game is active or not (ie, a player can make a move)
+let gameActive = true;
+
 const GameController = (function () {
     // logic for handling player turns, checking for wins and ties, and switching turns
     const player1 = createPlayer('Player 1', 'X');
@@ -40,6 +43,7 @@ const GameController = (function () {
         } else {
             currentPlayer = player1;
         }
+        DisplayController.setStatusMessage(currentPlayer.name + ' to go next');
     }
 
     const checkWin = function(board, marker) {
@@ -76,11 +80,18 @@ const GameController = (function () {
     // reset the game
     const resetGame = function () {
         GameBoard.reset();
+        DisplayController.renderBoard(GameBoard.getBoard());
         currentPlayer = player1;
+        DisplayController.setStatusMessage(currentPlayer.name + ' to go next')
+        gameActive = true;
     }
 
-    // logic to input player move
+    // logic to input player moves
     const processTurn = function (index) {
+        // if the game is not active, don't process any turns
+        if (!gameActive) {
+            return;
+        }
         // update the game board based on chosen cell (index) if it is valid
         if (GameBoard.setCell(index, currentPlayer.marker)) {
             let currentBoard = GameBoard.getBoard();
@@ -88,25 +99,22 @@ const GameController = (function () {
             DisplayController.renderBoard(currentBoard);
             // check for win before changing the player
             if (checkWin(currentBoard, currentPlayer.marker) === true) {
-                console.log('game has been won');
+                DisplayController.setStatusMessage(currentPlayer.name + ' wins!')
+                gameActive = false;
                 return;
             }
             // check for tie
             if (checkTie(currentBoard) === true) {
-                console.log('game has been tied');
+                DisplayController.setStatusMessage('Game tied!')
+                gameActive = false;
                 return;
-            } else {
-                console.log('no tie');
-            }
+            } 
             // change the player
             changePlayer();
-            console.log('next player will be: ' + currentPlayer.marker);
-        } else {
-            console.log('invalid selection');
         };
     }
 
-    return { getCurrentPlayer, processTurn };
+    return { getCurrentPlayer, processTurn, resetGame };
 })();
 
 function createPlayer (name, marker) {
@@ -130,6 +138,12 @@ const DisplayController = (function () {
       });
       addCellListeners();
     };
+
+    // function to render the cells and status messages on page load
+    const initialRender = function () {
+        renderBoard(GameBoard.getBoard());
+        setStatusMessage('Player 1 to go first')
+    }
   
     const setStatusMessage = function (message) {
       document.getElementById('status').textContent = message;
@@ -149,8 +163,15 @@ const DisplayController = (function () {
     return {
       renderBoard,
       setStatusMessage,
+      initialRender,
     };
   })();
 
 // initialize display on page load
-DisplayController.renderBoard(GameBoard.getBoard());
+DisplayController.initialRender();
+
+// event listener for resetting the game
+const resetButton = document.querySelector('#reset-button');
+resetButton.addEventListener('click', function (event) {
+    GameController.resetGame();
+})
